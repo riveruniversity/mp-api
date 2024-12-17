@@ -39,7 +39,7 @@ export interface FormResponse {
 	addressLine2: string | null;
 	addressCity: string | null;
 	addressState: string | null;
-	addressZip: number |null;
+	addressZip: string |null;
 	eventID: number;
 	pledgeCampaignID: null;
 	opportunityID: null;
