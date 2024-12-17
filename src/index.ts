@@ -60,10 +60,11 @@ export type MPInstance = {
   get: AxiosInstance['get'];
   put: AxiosInstance['put'];
   post: AxiosInstance['post'];
-  create: MPApiBase['create'];
+  createOne: MPApiBase['createOne'];
+  createMany: MPApiBase['createMany'];
   update: MPApiBase['update'];
   getOne: MPApiBase['getOne'];
-  getMultiple: MPApiBase['getMultiple'];
+  getMany: MPApiBase['getMany'];
 
   getContact(
     id: number,
@@ -160,10 +161,10 @@ export type MPInstance = {
     options?: MPCreateOptions
   ): Promise<FormResponse | { error: ErrorDetails; }>;
   createFormResponseAnswers(
-    params: CreateFormResponseAnswerParams,
+    params: CreateFormResponseAnswerParams[],
     options?: MPCreateOptions
-  ): Promise<FormResponseAnswer | { error: ErrorDetails; }>;
-  
+  ): Promise<FormResponseAnswer[] | { error: ErrorDetails; }>;
+
   updateContacts(
     contacts: WithRequired<Partial<Contact>, 'contactID'>[],
     options?: MPUpdateOptions
@@ -177,12 +178,13 @@ export type MPInstance = {
 
 export const createMPInstance = ({ auth }: { auth: { username: string; password: string; }; }): MPInstance => {
 
-  const { getOne, getMultiple, create, update, get, post, put, getError } = createApiBase({ auth });
+  const { getOne, getMany, createOne, createMany, update, get, post, put } = createApiBase({ auth });
 
   return {
     getOne,
-    getMultiple,
-    create,
+    getMany,
+    createOne,
+    createMany,
     update,
     get,
     post,
@@ -238,88 +240,88 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
       );
     },
     async getContacts(mpOptions = {}) {
-      return getMultiple<ContactRecord, Contact>(
+      return getMany<ContactRecord, Contact>(
         { path: `/tables/contacts`, mpOptions }
       );
     },
     async getHouseholds(mpOptions = {}) {
-      return getMultiple<HouseholdRecord, Household>(
+      return getMany<HouseholdRecord, Household>(
         { path: `/tables/households`, mpOptions }
       );
     },
     async getAddresses(mpOptions = {}) {
-      return getMultiple<AddressRecord, Address>(
+      return getMany<AddressRecord, Address>(
         { path: `/tables/addresses`, mpOptions }
       );
     },
     async getParticipants(mpOptions = {}) {
-      return getMultiple<ParticipantRecord, Participant>(
+      return getMany<ParticipantRecord, Participant>(
         { path: `/tables/participants`, mpOptions }
       );
     },
     async getEvents(mpOptions = {}) {
-      return getMultiple<EventRecord, Event>(
+      return getMany<EventRecord, Event>(
         { path: `/tables/events`, mpOptions }
       );
     },
     async getGroups(mpOptions = {}) {
-      return getMultiple<GroupRecord, Group>(
+      return getMany<GroupRecord, Group>(
         { path: `/tables/groups`, mpOptions }
       );
     },
     async getEventParticipants(mpOptions = {}) {
-      return getMultiple<EventParticipantRecord, EventParticipant>(
+      return getMany<EventParticipantRecord, EventParticipant>(
         { path: `/tables/event_participants`, mpOptions }
       );
     },
     async getGroupParticipants(mpOptions = {}) {
-      return getMultiple<GroupParticipantRecord, GroupParticipant>(
+      return getMany<GroupParticipantRecord, GroupParticipant>(
         { path: `/tables/group_participants`, mpOptions }
       );
     },
 
     async createContact(params, mpOptions = {}) {
-      return create<CreateContactParams, Contact>(
+      return createOne<CreateContactParams, Contact>(
         { path: `/tables/contacts`, mpOptions, params }
       );
     },
     async createHousehold(params, mpOptions) {
-      return create<CreateHouseholdParams, Household>(
+      return createOne<CreateHouseholdParams, Household>(
         { path: `/tables/households`, mpOptions, params }
       );
     },
     async createAddress(params, mpOptions) {
-      return create<CreateAddressParams, Address>(
+      return createOne<CreateAddressParams, Address>(
         { path: `/tables/addresses`, mpOptions, params }
       );
     },
     async createParticipant(params, mpOptions) {
-      return create<CreateParticipantParams, Participant>(
+      return createOne<CreateParticipantParams, Participant>(
         { path: `/tables/participants`, mpOptions, params }
       );
     },
     async createEventParticipant(params, mpOptions) {
-      return create<CreateEventParticipantParams, EventParticipant>(
+      return createOne<CreateEventParticipantParams, EventParticipant>(
         { path: `/tables/event_participants`, mpOptions, params }
       );
     },
     async createGroupParticipant(params, mpOptions) {
-      return create<CreateGroupParticipantParams, GroupParticipant>(
+      return createOne<CreateGroupParticipantParams, GroupParticipant>(
         { path: `/tables/group_participants`, mpOptions, params }
       );
     },
     async createContactAttribute(params, mpOptions) {
-      return create<CreateContactAttributeParams, ContactAttribute>(
+      return createOne<CreateContactAttributeParams, ContactAttribute>(
         { path: `/tables/contact_attributes`, mpOptions, params }
       );
     },
     async createFormResponse(params: CreateFormResponseParams, mpOptions) {
-      return create<CreateFormResponseParams, FormResponse>(
+      return createOne<CreateFormResponseParams, FormResponse>(
         { path: `/tables/form_responses`, mpOptions, params }
       );
     },
     async createFormResponseAnswers(params, mpOptions) {
-      return create<CreateFormResponseAnswerParams, FormResponseAnswer>(
+      return createMany<CreateFormResponseAnswerParams, FormResponseAnswer>(
         { path: `/tables/form_response_answers`, mpOptions, params }
       );
     },
@@ -347,6 +349,7 @@ export {
   Household,
   Address,
   FormResponse,
+  FormResponseAnswer,
   ErrorDetails,
   convertToCamelCase,
   convertToSnakeCase,

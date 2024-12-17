@@ -51,7 +51,7 @@ export function toCamelCase(str: string, { capitalIds = false }: { capitalIds?: 
 
 export function toCapitalSnakeCase(str: string, { capitalIds = false, capitalSnake = true }: { capitalIds?: boolean, capitalSnake?: boolean; }= {}) {
   str = str.replace(/(?<=^_|^__)[^\W_]/, match => match.at(0)?.toUpperCase() || '');
-  str = str.replace(/(?<!_|\/)(ID|[A-Z])/g, match => `_${match}`);
+  str = str.replace(/(?<!_|\/)(ID|[A-Z]|\d)/g, match => `_${match}`);
   str = capitalSnake ? str.charAt(0).toUpperCase() + str.slice(1) : str;
   return capitalIds ? str.replace(/_id$/i, '_ID') : str;
 }

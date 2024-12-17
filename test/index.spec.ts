@@ -1,7 +1,6 @@
 import { createMPInstance } from '../src/index';
 import * as dotenv from 'dotenv';
 import * as assert from 'assert';
-import AxiosError from 'axios/lib/core/AxiosError';
 import { v4 } from 'uuid';
 
 dotenv.config();
@@ -42,7 +41,7 @@ describe('MP Instance', function () {
     });
     it('should find one contact by id', async function () {
         const contactID = 111129;
-        const contact = await mp.findOneContact(contactID);
+        const contact = await mp.getContact(contactID);
         if (!contact) {
             assert.fail('no contact found');
         } else if ('error' in contact) {
@@ -66,8 +65,8 @@ describe('MP Instance', function () {
         });
         if ('error' in events) {
             const { error } = events;
-            if (error?.response?.data) {
-                assert.fail(`AxiosError: ${JSON.stringify(error.response.data, null, 2)}`);
+            if (error?.data) {
+                assert.fail(`AxiosError: ${JSON.stringify(error.data, null, 2)}`);
             } else if (error instanceof Error) {
                 assert.fail(error);
             } else {
@@ -90,9 +89,9 @@ describe('MP Instance', function () {
 
         if ('error' in contact) {
             const { error } = contact;
-            console.log(error.config);
-            if (error?.response?.data) {
-                assert.fail(`AxiosError: ${JSON.stringify(error.response.data, null, 2)}`);
+            console.log(error);
+            if (error?.data) {
+                assert.fail(`AxiosError: ${JSON.stringify(error.data, null, 2)}`);
             } else if (error instanceof Error) {
                 assert.fail(error);
             } else {

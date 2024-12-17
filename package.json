@@ -1,11 +1,11 @@
 {
   "name": "mp-js-api",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Node MinistryPlatform API",
   "main": "dist/index.js",
   "scripts": {
     "test": "mocha --require ts-node/register test/*",
-    "compile": "tsc"
+    "postinstall": "tsc"
   },
   "keywords": [],
   "author": "",
