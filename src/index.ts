@@ -1,74 +1,21 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { URLSearchParams } from 'url';
-import { Contact, mapContactToContactRecord } from './tables/contacts';
-import { Participant, mapParticipantToParticipantRecord, } from './tables/participants';
-import { EventParticipant, mapEventParticipantToEventParticipantRecord, } from './tables/event-participants';
-import { GroupParticipant, mapGroupParticipantToGroupParticipantRecord, } from './tables/group-participants';
-import { Event } from './tables/events';
-import { Group } from './tables/groups';
-import { ContactRecord } from './tables/contacts';
-import { mapContactRecord } from './tables/contacts';
-import { mapParticipantRecord } from './tables/participants';
-import { ParticipantRecord } from './tables/participants';
-import { EventRecord } from './tables/events';
-import { mapEventRecord } from './tables/events';
-import { GroupRecord } from './tables/groups';
-import { mapGroupRecord } from './tables/groups';
-import { mapEventParticipantRecord } from './tables/event-participants';
-import { EventParticipantRecord } from './tables/event-participants';
-import { GroupParticipantRecord } from './tables/group-participants';
-import { mapGroupParticipantRecord } from './tables/group-participants';
-import { Household, HouseholdRecord, mapHouseholdRecord, mapHouseholdToHouseholdRecord, } from './tables/households';
-import { Address, AddressRecord, mapAddressRecord, mapAddressToAddressRecord } from './tables/addresses';
-import { ContactAttribute, ContactAttributeRecord, mapContactAttributeRecord, mapContactAttributeToContactAttributeRecord } from './tables/contact-attributes';
-import { convertToCamelCase, convertToSnakeCase, escapeSql } from './utils/strings';
+import { createApiBase, MPApiBase, ErrorDetails, MPGetOptions, MPCreateOptions, MPUpdateOptions } from './api';
+import { convertToCamelCase, convertToSnakeCase, escapeSql, stringifyURLParams } from './utils/strings';
+import { Contact, ContactRecord } from './tables/contacts';
+import { Event, EventRecord } from './tables/events';
+import { Group, GroupRecord } from './tables/groups';
+import { Address, AddressRecord } from './tables/addresses';
+import { Household, HouseholdRecord } from './tables/households';
+import { Participant, ParticipantRecord } from './tables/participants';
+import { EventParticipant, EventParticipantRecord } from './tables/event-participants';
+import { GroupParticipant, GroupParticipantRecord } from './tables/group-participants';
+import { ContactAttribute, ContactAttributeRecord } from './tables/contact-attributes';
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
+import { FormResponseAnswer } from './tables/from-response-answers';
+import { AxiosInstance } from 'axios';
 
-interface TokenData {
-  access_token: string;
-  expires_in: number;
-  token_type: 'Bearer';
-}
-
-interface AccessToken {
-  digest: string;
-  expiration: number;
-}
-
-const createTokenGetter = (auth: { username: string; password: string; }) => {
-  let token: AccessToken | undefined;
-
-  return async () => {
-    // If the token is near expiration, get a new one.
-    if (!token || token.expiration - 60000 < Date.now()) {
-      const tokenRes = await axios.post<TokenData>(
-        'https://mp.revival.com/ministryplatformapi/oauth/connect/token',
-        new URLSearchParams({
-          grant_type: 'client_credentials',
-          scope: 'http://www.thinkministry.com/dataplatform/scopes/all',
-        }).toString(),
-        { auth }
-      );
-      const [, payload] = tokenRes.data.access_token.split('.');
-      try {
-        const jsonPayload: { exp: number; } = JSON.parse(
-          Buffer.from(payload, 'base64url').toString()
-        );
-        token = {
-          digest: tokenRes.data.access_token,
-          expiration: jsonPayload.exp * 1000,
-        };
-        return token.digest;
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      return token.digest;
-    }
-  };
-};
 
 type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
+
 
 export type CreateContactParams = WithRequired<
   Omit<Partial<Contact>, 'contactID'>,
@@ -102,480 +49,289 @@ export type CreateFormResponseParams = WithRequired<
   Omit<Partial<FormResponse>, 'formResponseID'>,
   'formID' | 'responseDate'
 >;
+export type CreateFormResponseAnswerParams = WithRequired<
+  Omit<Partial<FormResponseAnswer>, 'formResponseAnswerID'>,
+  'formFieldID' | 'formResponseID'
+>;
 
-export type MPGetOptions = {
-  select?: string;
-  filter?: string;
-  orderBy?: string;
-  groupBy?: string;
-  top?: number;
-  skip?: number;
-  distinct?: boolean;
-};
 
-export type MPCreateOptions = {
-  user?: number;
-};
-
-export type MPUpdateOptions = MPCreateOptions;
-export type MPGetInstance = <T = any, R = AxiosResponse<T, any>>(url: string, mpOptions?: MPGetOptions, config?: AxiosRequestConfig) => Promise<R>;
 export type MPInstance = {
-  get: MPGetInstance; // - AxiosInstance['get']
-  post: AxiosInstance['post'];
+
+  get: AxiosInstance['get'];
   put: AxiosInstance['put'];
+  post: AxiosInstance['post'];
+  create: MPApiBase['create'];
+  update: MPApiBase['update'];
+  getOne: MPApiBase['getOne'];
+  getMultiple: MPApiBase['getMultiple'];
+
   getContact(
     id: number,
     options?: MPGetOptions
-  ): Promise<Contact | undefined | { error: any; }>;
+  ): Promise<Contact | undefined | { error: ErrorDetails; }>;
   getHousehold(
     id: number,
     options?: MPGetOptions
-  ): Promise<Household | undefined | { error: any; }>;
+  ): Promise<Household | undefined | { error: ErrorDetails; }>;
   getAddress(
     id: number,
     options?: MPGetOptions
-  ): Promise<Address | undefined | { error: any; }>;
+  ): Promise<Address | undefined | { error: ErrorDetails; }>;
   getParticipant(
     id: number,
     options?: MPGetOptions
-  ): Promise<Participant | undefined | { error: any; }>;
+  ): Promise<Participant | undefined | { error: ErrorDetails; }>;
+  getContactAttribute(
+    id: number,
+    options?: MPGetOptions
+  ): Promise<ContactAttribute | undefined | { error: ErrorDetails; }>;
   getEvent(
     id: number,
     options?: MPGetOptions
-  ): Promise<Event | undefined | { error: any; }>;
+  ): Promise<Event | undefined | { error: ErrorDetails; }>;
   getGroup(
     id: number,
     options?: MPGetOptions
-  ): Promise<Group | undefined | { error: any; }>;
+  ): Promise<Group | undefined | { error: ErrorDetails; }>;
   getEventParticipant(
     id: number,
     options?: MPGetOptions
-  ): Promise<EventParticipant | undefined | { error: any; }>;
+  ): Promise<EventParticipant | undefined | { error: ErrorDetails; }>;
   getGroupParticipant(
     id: number,
     options?: MPGetOptions
-  ): Promise<GroupParticipant | undefined | { error: any; }>;
+  ): Promise<GroupParticipant | undefined | { error: ErrorDetails; }>;
+  getFormResponse(
+    id: number,
+    options?: MPGetOptions
+  ): Promise<FormResponse | undefined | { error: ErrorDetails; }>;
 
   getContacts(
     options?: MPGetOptions
-  ): Promise<Contact[] | { error: any; }>;
+  ): Promise<Contact[] | { error: ErrorDetails; }>;
   getHouseholds(
     options?: MPGetOptions
-  ): Promise<Household[] | { error: any; }>;
+  ): Promise<Household[] | { error: ErrorDetails; }>;
   getAddresses(
     options?: MPGetOptions
-  ): Promise<Address[] | { error: any; }>;
+  ): Promise<Address[] | { error: ErrorDetails; }>;
   getParticipants(
     options?: MPGetOptions
-  ): Promise<Participant[] | { error: any; }>;
-  getEvents(options?: MPGetOptions): Promise<Event[] | { error: any; }>;
-  getGroups(options?: MPGetOptions): Promise<Group[] | { error: any; }>;
+  ): Promise<Participant[] | { error: ErrorDetails; }>;
+  getEvents(options?: MPGetOptions): Promise<Event[] | { error: ErrorDetails; }>;
+  getGroups(options?: MPGetOptions): Promise<Group[] | { error: ErrorDetails; }>;
   getEventParticipants(
     options?: MPGetOptions
-  ): Promise<EventParticipant[] | { error: any; }>;
+  ): Promise<EventParticipant[] | { error: ErrorDetails; }>;
   getGroupParticipants(
     options?: MPGetOptions
-  ): Promise<GroupParticipant[] | { error: any; }>;
+  ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
 
   createContact(
     params: CreateContactParams,
     options?: MPCreateOptions
-  ): Promise<Contact | { error: any; }>;
+  ): Promise<Contact | { error: ErrorDetails; }>;
   createHousehold(
     params: CreateHouseholdParams,
     options?: MPCreateOptions
-  ): Promise<Household | { error: any; }>;
+  ): Promise<Household | { error: ErrorDetails; }>;
   createAddress(
     params: CreateAddressParams,
     options?: MPCreateOptions
-  ): Promise<Address | { error: any; }>;
+  ): Promise<Address | { error: ErrorDetails; }>;
   createParticipant(
     params: CreateParticipantParams,
     options?: MPCreateOptions
-  ): Promise<Participant | { error: any; }>;
+  ): Promise<Participant | { error: ErrorDetails; }>;
   createEventParticipant(
     params: CreateEventParticipantParams,
     options?: MPCreateOptions
-  ): Promise<EventParticipant | { error: any; }>;
+  ): Promise<EventParticipant | { error: ErrorDetails; }>;
   createGroupParticipant(
     params: CreateGroupParticipantParams,
     options?: MPCreateOptions
-  ): Promise<GroupParticipant | { error: any; }>;
+  ): Promise<GroupParticipant | { error: ErrorDetails; }>;
   createContactAttribute(
     params: CreateContactAttributeParams,
     options?: MPCreateOptions
-  ): Promise<ContactAttribute | { error: any; }>;
+  ): Promise<ContactAttribute | { error: ErrorDetails; }>;
   createFormResponse(
     params: CreateFormResponseParams,
     options?: MPCreateOptions
-  ): Promise<FormResponse | { error: any; }>;
+  ): Promise<FormResponse | { error: ErrorDetails; }>;
+  createFormResponseAnswers(
+    params: CreateFormResponseAnswerParams,
+    options?: MPCreateOptions
+  ): Promise<FormResponseAnswer | { error: ErrorDetails; }>;
+  
   updateContacts(
     contacts: WithRequired<Partial<Contact>, 'contactID'>[],
     options?: MPUpdateOptions
-  ): Promise<Contact[] | { error: any; }>;
-
+  ): Promise<Contact[] | { error: ErrorDetails; }>;
   updateEventParticipants(
     participants: WithRequired<Partial<EventParticipant>, 'eventParticipantID'>[],
     options?: MPUpdateOptions
-  ): Promise<EventParticipant[] | { error: any; }>;
+  ): Promise<EventParticipant[] | { error: ErrorDetails; }>;
 };
 
-const stringifyMPOptions = (mpOptions: MPGetOptions | MPCreateOptions | MPUpdateOptions = {}) =>
-  escapeSql(Object.entries(mpOptions).reduce((acc, [key, value]) => {
-    if (!acc) {
-      acc += `?$${key}=${value}`;
-    } else {
-      acc += `&$${key}=${value}`;
-    }
-    return acc;
-  }, ''));
 
 export const createMPInstance = ({ auth }: { auth: { username: string; password: string; }; }): MPInstance => {
-  /**
-   * Gets MP oauth token.
-   * @returns token
-   */
-  const getToken = createTokenGetter(auth);
-  const api = axios.create({
-    baseURL: 'https://mp.revival.com/ministryplatformapi',
-  });
 
-  const get = async <T = any, R = AxiosResponse<T, any>>(
-    url: string,
-    mpOptions: MPGetOptions,
-    config?: AxiosRequestConfig
-  ) =>
-    api.get<T, R>(url + stringifyMPOptions(mpOptions), {
-      ...config,
-      headers: {
-        ...config?.headers,
-        Authorization: `Bearer ${await getToken()}`,
-      },
-    });
-  const post = async <T, R = AxiosResponse<T, any>>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ) =>
-    api.post<T, R>(url, data, {
-      ...config,
-      headers: {
-        ...config?.headers,
-        Authorization: `Bearer ${await getToken()}`,
-      },
-    });
-  const put = async <T, R = AxiosResponse<T, any>>(
-    url: string,
-    data?: any,
-    config?: AxiosRequestConfig
-  ) =>
-    api.put<T, R>(url, data, {
-      ...config,
-      headers: {
-        ...config?.headers,
-        Authorization: `Bearer ${await getToken()}`,
-      },
-    });
+  const { getOne, getMultiple, create, update, get, post, put, getError } = createApiBase({ auth });
 
   return {
+    getOne,
+    getMultiple,
+    create,
+    update,
     get,
     post,
     put,
-    async getContact(id, options = {}) {
-      try {
-        const res = await get<[ContactRecord?]>(
-          `/tables/contacts/${id}`, options
-        );
-        return res.data[0] ? mapContactRecord(res.data[0]) : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getContact(id, mpOptions = {}) {
+      return getOne<ContactRecord, Contact>(
+        { path: `/tables/contacts`, id, mpOptions }
+      );
     },
-    async getHousehold(id, options = {}) {
-      try {
-        const res = await get<[HouseholdRecord?]>(
-          `/tables/households/${id}`, options
-        );
-        return res.data[0]
-          ? mapHouseholdRecord(res.data[0])
-          : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getHousehold(id, mpOptions = {}) {
+      return getOne<HouseholdRecord, Household>(
+        { path: `/tables/households`, id, mpOptions }
+      );
     },
-    async getAddress(id, options = {}) {
-      try {
-        const res = await get<[AddressRecord?]>(
-          `/tables/addresses/${id}`, options
-        );
-        return res.data[0] ? convertToCamelCase(res.data[0]) : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getAddress(id, mpOptions = {}) {
+      return getOne<AddressRecord, Address>(
+        { path: `/tables/addresses`, id, mpOptions }
+      );
     },
-    async getParticipant(id, options = {}) {
-      try {
-        const res = await get<[ParticipantRecord?]>(
-          `/tables/participants/${id}`, options
-        );
-        return res.data[0]
-          ? mapParticipantRecord(res.data[0])
-          : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getParticipant(id, mpOptions = {}) {
+      return getOne<ParticipantRecord, Participant>(
+        { path: `/tables/participants`, id, mpOptions }
+      );
     },
-    async getEvent(id, options = {}) {
-      try {
-        const res = await get<[EventRecord?]>(
-          `/tables/events/${id}`, options
-        );
-        return res.data[0] ? convertToCamelCase(res.data[0]) : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getContactAttribute(id, mpOptions = {}) {
+      return getOne<ContactAttributeRecord, ContactAttribute>(
+        { path: `/tables/participants`, id, mpOptions }
+      );
     },
-    async getGroup(id, options = {}) {
-      try {
-        const res = await get<[GroupRecord?]>(
-          `/tables/groups/${id}`, options
-        );
-        return res.data[0] ? mapGroupRecord(res.data[0]) : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getEvent(id, mpOptions = {}) {
+      return getOne<EventRecord, Event>(
+        { path: `/tables/events`, id, mpOptions }
+      );
     },
-    async getEventParticipant(id, options = {}) {
-      try {
-        const res = await get<[EventParticipantRecord?]>(
-          `/tables/event_participants/${id}`, options
-        );
-        return res.data[0]
-          ? mapEventParticipantRecord(res.data[0])
-          : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getGroup(id, mpOptions = {}) {
+      return getOne<GroupRecord, Group>(
+        { path: `/tables/groups`, id, mpOptions }
+      );
     },
-    async getGroupParticipant(id, options = {}) {
-      try {
-        const res = await get<[GroupParticipantRecord?]>(
-          `/tables/group_participants/${id}`, options
-        );
-        return res.data[0]
-          ? mapGroupParticipantRecord(res.data[0])
-          : undefined;
-      } catch (err) {
-        return { error: err };
-      }
+    async getEventParticipant(id, mpOptions = {}) {
+      return getOne<EventParticipantRecord, EventParticipant>(
+        { path: `/tables/event_participants`, id, mpOptions }
+      );
     },
-    async getContacts(options = {}) {
-      try {
-        const res = await get<ContactRecord[]>(
-          `/tables/contacts`, options
-        );
-        return res.data.map(mapContactRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getGroupParticipant(id, mpOptions = {}) {
+      return getOne<GroupParticipantRecord, GroupParticipant>(
+        { path: `/tables/group_participants`, id, mpOptions }
+      );
     },
-    async getHouseholds(options = {}) {
-      try {
-        const res = await get<HouseholdRecord[]>(
-          `/tables/households`, options
-        );
-        return res.data.map(mapHouseholdRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getFormResponse(id, mpOptions = {}) {
+      return getOne<FormResponseRecord, FormResponse>(
+        { path: `/tables/form_responses`, id, mpOptions }
+      );
     },
-    async getAddresses(options = {}) {
-      try {
-        const res = await get<AddressRecord[]>(
-          `/tables/addresses`, options
-        );
-        return res.data.map(mapAddressRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getContacts(mpOptions = {}) {
+      return getMultiple<ContactRecord, Contact>(
+        { path: `/tables/contacts`, mpOptions }
+      );
     },
-    async getParticipants(options = {}) {
-      try {
-        const res = await get<ParticipantRecord[]>(
-          `/tables/participants`, options
-        );
-        return res.data.map(mapParticipantRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getHouseholds(mpOptions = {}) {
+      return getMultiple<HouseholdRecord, Household>(
+        { path: `/tables/households`, mpOptions }
+      );
     },
-    async getEvents(options = {}) {
-      try {
-        const res = await get<EventRecord[]>(`/tables/events`, options);
-        return res.data.map(mapEventRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getAddresses(mpOptions = {}) {
+      return getMultiple<AddressRecord, Address>(
+        { path: `/tables/addresses`, mpOptions }
+      );
     },
-    async getGroups(options = {}) {
-      try {
-        const res = await get<GroupRecord[]>(`/tables/groups`, options);
-        return res.data.map(mapGroupRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getParticipants(mpOptions = {}) {
+      return getMultiple<ParticipantRecord, Participant>(
+        { path: `/tables/participants`, mpOptions }
+      );
     },
-    async getEventParticipants(options = {}) {
-      try {
-        const res = await get<EventParticipantRecord[]>(
-          `/tables/event_participants`, options
-        );
-        return res.data.map(mapEventParticipantRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getEvents(mpOptions = {}) {
+      return getMultiple<EventRecord, Event>(
+        { path: `/tables/events`, mpOptions }
+      );
     },
-    async getGroupParticipants(options = {}) {
-      try {
-        const res = await get<GroupParticipantRecord[]>(
-          `/tables/group_participants`, options
-        );
-        return res.data.map(mapGroupParticipantRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async getGroups(mpOptions = {}) {
+      return getMultiple<GroupRecord, Group>(
+        { path: `/tables/groups`, mpOptions }
+      );
     },
-    async createContact(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[ContactRecord]>(
-          `/tables/contacts${query}`,
-          [mapContactToContactRecord(params as Contact)]
-        );
-        return mapContactRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
+    async getEventParticipants(mpOptions = {}) {
+      return getMultiple<EventParticipantRecord, EventParticipant>(
+        { path: `/tables/event_participants`, mpOptions }
+      );
     },
-    async createHousehold(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[HouseholdRecord]>(
-          `/tables/households${query}`,
-          [mapHouseholdToHouseholdRecord(params as Household)]
-        );
-        return mapHouseholdRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
-    },
-    async createAddress(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[AddressRecord]>(
-          `/tables/addresses${query}`,
-          [mapAddressToAddressRecord(params as Address)]
-        );
-        return mapAddressRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
-    },
-    async createParticipant(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[ParticipantRecord]>(
-          `/tables/participants${query}`,
-          [mapParticipantToParticipantRecord(params as Participant)]
-        );
-        return mapParticipantRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
-    },
-    async createEventParticipant(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[EventParticipantRecord]>(
-          `/tables/event_participants${query}`,
-          [
-            mapEventParticipantToEventParticipantRecord(
-              params as EventParticipant
-            ),
-          ]
-        );
-        return mapEventParticipantRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
-    },
-    async createGroupParticipant(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[GroupParticipantRecord]>(
-          `/tables/group_participants${query}`,
-          [
-            mapGroupParticipantToGroupParticipantRecord(
-              params as GroupParticipant
-            ),
-          ]
-        );
-        return mapGroupParticipantRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
-    },
-    async createContactAttribute(params, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[ContactAttributeRecord]>(
-          `/tables/contact_attributes${query}`,
-          [
-            mapContactAttributeToContactAttributeRecord(
-              params as ContactAttribute
-            ),
-          ]
-        );
-        return mapContactAttributeRecord(res.data[0]);
-      } catch (err) {
-        return { error: err };
-      }
+    async getGroupParticipants(mpOptions = {}) {
+      return getMultiple<GroupParticipantRecord, GroupParticipant>(
+        { path: `/tables/group_participants`, mpOptions }
+      );
     },
 
-    async createFormResponse(params: CreateFormResponseParams, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await post<[FormResponseRecord]>(
-          `/tables/form_responses${query}`, [
-          convertToSnakeCase<CreateFormResponseParams, FormResponseRecord>(params)
-        ]);
-        return convertToCamelCase(res.data[0]);
-      } catch (err: any) {
-        return { error: err };
-      }
+    async createContact(params, mpOptions = {}) {
+      return create<CreateContactParams, Contact>(
+        { path: `/tables/contacts`, mpOptions, params }
+      );
     },
-    async updateContacts(contacts, options = {}) {
-      const query = stringifyMPOptions(options);
-      try {
-        const res = await put<ContactRecord[]>(
-          `/tables/contacts${query}`,
-          contacts.map(mapContactToContactRecord)
-        );
-        return res.data.map(mapContactRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async createHousehold(params, mpOptions) {
+      return create<CreateHouseholdParams, Household>(
+        { path: `/tables/households`, mpOptions, params }
+      );
     },
-    async updateEventParticipants(eventParticipants, options = {}) {
-      try {
-        const res = await put<EventParticipantRecord[]>(
-          `/tables/event_participants`,
-          eventParticipants.map(mapEventParticipantToEventParticipantRecord)
-        );
-        return res.data.map(mapEventParticipantRecord);
-      } catch (err) {
-        return { error: err };
-      }
+    async createAddress(params, mpOptions) {
+      return create<CreateAddressParams, Address>(
+        { path: `/tables/addresses`, mpOptions, params }
+      );
+    },
+    async createParticipant(params, mpOptions) {
+      return create<CreateParticipantParams, Participant>(
+        { path: `/tables/participants`, mpOptions, params }
+      );
+    },
+    async createEventParticipant(params, mpOptions) {
+      return create<CreateEventParticipantParams, EventParticipant>(
+        { path: `/tables/event_participants`, mpOptions, params }
+      );
+    },
+    async createGroupParticipant(params, mpOptions) {
+      return create<CreateGroupParticipantParams, GroupParticipant>(
+        { path: `/tables/group_participants`, mpOptions, params }
+      );
+    },
+    async createContactAttribute(params, mpOptions) {
+      return create<CreateContactAttributeParams, ContactAttribute>(
+        { path: `/tables/contact_attributes`, mpOptions, params }
+      );
+    },
+    async createFormResponse(params: CreateFormResponseParams, mpOptions) {
+      return create<CreateFormResponseParams, FormResponse>(
+        { path: `/tables/form_responses`, mpOptions, params }
+      );
+    },
+    async createFormResponseAnswers(params, mpOptions) {
+      return create<CreateFormResponseAnswerParams, FormResponseAnswer>(
+        { path: `/tables/form_response_answers`, mpOptions, params }
+      );
+    },
+    async updateContacts(params, mpOptions) {
+      return update<Partial<Contact>, Contact>(
+        { path: `/tables/contacts`, mpOptions, params }
+      );
+    },
+    async updateEventParticipants(params, mpOptions) {
+      return update<Partial<EventParticipant>, EventParticipant>(
+        { path: `/tables/event_participants`, mpOptions, params }
+      );
     },
   };
 };
@@ -587,7 +343,13 @@ export {
   Group,
   EventParticipant,
   GroupParticipant,
+  ContactAttribute,
   Household,
   Address,
-  ContactAttribute
+  FormResponse,
+  ErrorDetails,
+  convertToCamelCase,
+  convertToSnakeCase,
+  stringifyURLParams,
+  escapeSql
 };

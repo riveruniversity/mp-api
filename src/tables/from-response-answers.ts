@@ -1,5 +1,3 @@
-
-
 export interface FormResponseAnswerRecord {
 	Form_Response_Answer_ID: number;
 	Form_Field_ID: number;
@@ -14,12 +12,12 @@ export interface FormResponseAnswerRecord {
 
 
 export interface FormResponseAnswer {
-	form_Response_Answer_ID: number;
-	form_Field_ID: number;
+	formResponseAnswerID: number;
+	formFieldID: number;
+	formResponseID: number;
 	response: string | null;
-	form_Response_ID: number;
-	event_Participant_ID: number | null;
-	pledge_ID: null;
-	opportunity_Response: null;
+	eventParticipantID: number | null;
+	pledgeID: null;
+	opportunityResponse: null;
 	placed: boolean;
 }
