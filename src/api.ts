@@ -4,7 +4,7 @@ import { convertToCamelCase, convertToSnakeCase, stringifyURLParams } from './ut
 
 
 export type APIGetOneInstance = <T, R>({ id, path, mpOptions, config }: APIGetParameter & { id: number; }) => Promise<R | undefined | { error: ErrorDetails; }>;
-export type APIGetMultipleInstance = <T, R>({ path, mpOptions, config }: APIGetParameter) => Promise<R[] | { error: ErrorDetails; }>;
+export type APIGetMultipleInstance = <T, R>({ path, mpOptions, config }: APIGetParameter & { mpOptions: MPGetOptions; }) => Promise<R[] | { error: ErrorDetails; }>;
 export type APICreateOneInstance = <T, R>({ path, mpOptions, params, config }: APICreateOneParameter<T>) => Promise<R | { error: ErrorDetails; }>;
 export type APICreateManyInstance = <T, R>({ path, mpOptions, params, config }: APICreateManyParameter<T>) => Promise<R[] | { error: ErrorDetails; }>;
 export type APIUpdateInstance = <T, R>({ path, mpOptions, params, config }: APIUpdateParameter<T>) => Promise<R[] | { error: ErrorDetails; }>;
@@ -93,9 +93,9 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     }
   };
 
-  const getMany: APIGetMultipleInstance = async <T, R>({ id, path, mpOptions, config }: APIGetParameter) => {
+  const getMany: APIGetMultipleInstance = async <T, R>({ path, mpOptions, config }: APIGetParameter) => {
     try {
-      const url = id ? `${path}/${id}` : path + stringifyURLParams(mpOptions);
+      const url = path + stringifyURLParams(mpOptions);
       const res = await api.get<T[]>(url, {
         ...config,
         headers: {
@@ -229,7 +229,7 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     put,
     post,
     getOne,
-    getMany: getMany,
+    getMany,
     getError
   };
 };
@@ -267,7 +267,6 @@ export type MPCreateOptions = {
 export type MPUpdateOptions = MPCreateOptions;
 
 interface APIGetParameter {
-  id?: number;
   path: string;
   mpOptions?: MPGetOptions;
   config?: AxiosRequestConfig;

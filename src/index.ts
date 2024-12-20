@@ -15,8 +15,8 @@ import { AxiosInstance } from 'axios';
 import { ContactEmailAddress, ContactEmailAddressRecord } from './tables/contact-email-addresses';
 
 
-type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
+export type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
+export type AtLeastOne<T> = { [K in keyof T]-?: Required<Pick<T, K>> }[keyof T];
 
 export type CreateContactParams = WithRequired<
   Omit<Partial<Contact>, 'contactID'>,
@@ -75,6 +75,14 @@ export type MPInstance = {
     id: number,
     options?: MPGetOptions
   ): Promise<Contact | undefined | { error: ErrorDetails; }>;
+  getContactAttribute(
+    id: number,
+    options?: MPGetOptions
+  ): Promise<ContactAttribute | undefined | { error: ErrorDetails; }>;
+  getContactEmailAddress(
+    id: number,
+    options?: MPGetOptions
+  ): Promise<ContactEmailAddress | undefined | { error: ErrorDetails; }>;
   getHousehold(
     id: number,
     options?: MPGetOptions
@@ -87,10 +95,6 @@ export type MPInstance = {
     id: number,
     options?: MPGetOptions
   ): Promise<Participant | undefined | { error: ErrorDetails; }>;
-  getContactAttribute(
-    id: number,
-    options?: MPGetOptions
-  ): Promise<ContactAttribute | undefined | { error: ErrorDetails; }>;
   getEvent(
     id: number,
     options?: MPGetOptions
@@ -113,28 +117,34 @@ export type MPInstance = {
   ): Promise<FormResponse | undefined | { error: ErrorDetails; }>;
 
   getContacts(
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<Contact[] | { error: ErrorDetails; }>;
+  getContactAttributes(
+    options: AtLeastOne<MPGetOptions>
+  ): Promise<ContactAttribute[] | { error: ErrorDetails; }>;
   getContactEmailAddresses(
-    id?: number,
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<ContactEmailAddress[] | { error: ErrorDetails; }>;
   getHouseholds(
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<Household[] | { error: ErrorDetails; }>;
   getAddresses(
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<Address[] | { error: ErrorDetails; }>;
   getParticipants(
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<Participant[] | { error: ErrorDetails; }>;
-  getEvents(options?: MPGetOptions): Promise<Event[] | { error: ErrorDetails; }>;
-  getGroups(options?: MPGetOptions): Promise<Group[] | { error: ErrorDetails; }>;
+  getEvents(
+    options: AtLeastOne<MPGetOptions>
+  ): Promise<Event[] | { error: ErrorDetails; }>;
+  getGroups(
+    options: AtLeastOne<MPGetOptions>
+  ): Promise<Group[] | { error: ErrorDetails; }>;
   getEventParticipants(
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<EventParticipant[] | { error: ErrorDetails; }>;
   getGroupParticipants(
-    options?: MPGetOptions
+    options: AtLeastOne<MPGetOptions>
   ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
 
   createContact(
@@ -207,6 +217,16 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/contacts`, id, mpOptions }
       );
     },
+    async getContactAttribute(id, mpOptions = {}) {
+      return getOne<ContactAttributeRecord, ContactAttribute>(
+        { path: `/tables/contact_attributes`, id, mpOptions }
+      );
+    },
+    async getContactEmailAddress(id, mpOptions = {}) {
+      return getOne<ContactEmailAddressRecord, ContactEmailAddress>(
+        { path: `/tables/contact_email_addresses`, id, mpOptions }
+      );
+    },
     async getHousehold(id, mpOptions = {}) {
       return getOne<HouseholdRecord, Household>(
         { path: `/tables/households`, id, mpOptions }
@@ -219,11 +239,6 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     },
     async getParticipant(id, mpOptions = {}) {
       return getOne<ParticipantRecord, Participant>(
-        { path: `/tables/participants`, id, mpOptions }
-      );
-    },
-    async getContactAttribute(id, mpOptions = {}) {
-      return getOne<ContactAttributeRecord, ContactAttribute>(
         { path: `/tables/participants`, id, mpOptions }
       );
     },
@@ -252,47 +267,52 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/form_responses`, id, mpOptions }
       );
     },
-    async getContacts(mpOptions = {}) {
+    async getContacts(mpOptions) {
       return getMany<ContactRecord, Contact>(
         { path: `/tables/contacts`, mpOptions }
       );
     },
-    async getHouseholds(mpOptions = {}) {
+    async getContactAttributes(mpOptions) {
+      return getMany<ContactAttributeRecord, ContactAttribute>(
+        { path: `/tables/contact_attributes`, mpOptions }
+      );
+    },
+    async getContactEmailAddresses(mpOptions) {
+      return getMany<ContactEmailAddressRecord, ContactEmailAddress>(
+        { path: `/tables/contact_email_addresses`, mpOptions }
+      );
+    },
+    async getHouseholds(mpOptions) {
       return getMany<HouseholdRecord, Household>(
         { path: `/tables/households`, mpOptions }
       );
     },
-    async getAddresses(mpOptions = {}) {
+    async getAddresses(mpOptions) {
       return getMany<AddressRecord, Address>(
         { path: `/tables/addresses`, mpOptions }
       );
     },
-    async getContactEmailAddresses(id, mpOptions = {}) {
-      return getMany<ContactEmailAddressRecord, ContactEmailAddress>(
-        { path: `/tables/contact_email_addresses`, id, mpOptions }
-      );
-    },
-    async getParticipants(mpOptions = {}) {
+    async getParticipants(mpOptions) {
       return getMany<ParticipantRecord, Participant>(
         { path: `/tables/participants`, mpOptions }
       );
     },
-    async getEvents(mpOptions = {}) {
+    async getEvents(mpOptions) {
       return getMany<EventRecord, Event>(
         { path: `/tables/events`, mpOptions }
       );
     },
-    async getGroups(mpOptions = {}) {
+    async getGroups(mpOptions) {
       return getMany<GroupRecord, Group>(
         { path: `/tables/groups`, mpOptions }
       );
     },
-    async getEventParticipants(mpOptions = {}) {
+    async getEventParticipants(mpOptions) {
       return getMany<EventParticipantRecord, EventParticipant>(
         { path: `/tables/event_participants`, mpOptions }
       );
     },
-    async getGroupParticipants(mpOptions = {}) {
+    async getGroupParticipants(mpOptions) {
       return getMany<GroupParticipantRecord, GroupParticipant>(
         { path: `/tables/group_participants`, mpOptions }
       );
