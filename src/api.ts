@@ -24,13 +24,12 @@ export interface MPApiBase {
 
 export interface ErrorDetails {
   message: string;
-  name: string;
+  name?: string;
   code?: string;
   status?: number;
   method?: string;
   url?: string;
-  data: string;
-  error: true;
+  data?: string;
 }
 
 
@@ -77,7 +76,7 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     baseURL: 'https://mp.revival.com/ministryplatformapi',
   });
 
-  const getOne: APIGetOneInstance = async <T, R>({ id, path, mpOptions, config }) => {
+  const getOne: APIGetOneInstance = async <T, R>({ id, path, mpOptions, config }: APIGetParameter & { id: number; }) => {
     try {
       const url = `${path}/${id}` + stringifyURLParams(mpOptions);
       const res = await api.get<T>(url, {
@@ -94,9 +93,9 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     }
   };
 
-  const getMany: APIGetMultipleInstance = async <T, R>({ path, mpOptions, config }: APIGetParameter) => {
+  const getMany: APIGetMultipleInstance = async <T, R>({ id, path, mpOptions, config }: APIGetParameter) => {
     try {
-      const url = path + stringifyURLParams(mpOptions);
+      const url = id ? `${path}/${id}` : path + stringifyURLParams(mpOptions);
       const res = await api.get<T[]>(url, {
         ...config,
         headers: {
@@ -212,7 +211,6 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
 
   const getError = function (error: AxiosError): ErrorDetails {
     return {
-      error: true,
       message: error.message,
       name: error.name,
       code: error.code,
@@ -269,6 +267,7 @@ export type MPCreateOptions = {
 export type MPUpdateOptions = MPCreateOptions;
 
 interface APIGetParameter {
+  id?: number;
   path: string;
   mpOptions?: MPGetOptions;
   config?: AxiosRequestConfig;
@@ -293,3 +292,5 @@ interface APIUpdateParameter<T> {
   mpOptions?: MPCreateOptions;
   config?: AxiosRequestConfig;
 };
+
+export type DateTimeIsoString = `${number}-${number}-${number}T${number}:${number}:${number}`;

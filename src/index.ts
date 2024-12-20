@@ -1,4 +1,4 @@
-import { createApiBase, MPApiBase, ErrorDetails, MPGetOptions, MPCreateOptions, MPUpdateOptions } from './api';
+import { createApiBase, MPApiBase, ErrorDetails, MPGetOptions, MPCreateOptions, MPUpdateOptions, DateTimeIsoString } from './api';
 import { convertToCamelCase, convertToSnakeCase, escapeSql, stringifyURLParams } from './utils/strings';
 import { Contact, ContactRecord } from './tables/contacts';
 import { Event, EventRecord } from './tables/events';
@@ -12,6 +12,7 @@ import { ContactAttribute, ContactAttributeRecord } from './tables/contact-attri
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
 import { FormResponseAnswer } from './tables/from-response-answers';
 import { AxiosInstance } from 'axios';
+import { ContactEmailAddress, ContactEmailAddressRecord } from './tables/contact-email-addresses';
 
 
 type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -52,6 +53,10 @@ export type CreateFormResponseParams = WithRequired<
 export type CreateFormResponseAnswerParams = WithRequired<
   Omit<Partial<FormResponseAnswer>, 'formResponseAnswerID'>,
   'formFieldID' | 'formResponseID'
+>;
+export type CreateContactEmailAddressParams = WithRequired<
+  Omit<Partial<ContactEmailAddress>, 'emailAddressID'>,
+  'emailAddress' | 'contactID'
 >;
 
 
@@ -110,6 +115,10 @@ export type MPInstance = {
   getContacts(
     options?: MPGetOptions
   ): Promise<Contact[] | { error: ErrorDetails; }>;
+  getContactEmailAddresses(
+    id?: number,
+    options?: MPGetOptions
+  ): Promise<ContactEmailAddress[] | { error: ErrorDetails; }>;
   getHouseholds(
     options?: MPGetOptions
   ): Promise<Household[] | { error: ErrorDetails; }>;
@@ -164,6 +173,10 @@ export type MPInstance = {
     params: CreateFormResponseAnswerParams[],
     options?: MPCreateOptions
   ): Promise<FormResponseAnswer[] | { error: ErrorDetails; }>;
+  createContactEmailAddress(
+    params: CreateContactEmailAddressParams[],
+    options?: MPCreateOptions
+  ): Promise<ContactEmailAddress[] | { error: ErrorDetails; }>;
 
   updateContacts(
     contacts: WithRequired<Partial<Contact>, 'contactID'>[],
@@ -254,6 +267,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/addresses`, mpOptions }
       );
     },
+    async getContactEmailAddresses(id, mpOptions = {}) {
+      return getMany<ContactEmailAddressRecord, ContactEmailAddress>(
+        { path: `/tables/contact_email_addresses`, id, mpOptions }
+      );
+    },
     async getParticipants(mpOptions = {}) {
       return getMany<ParticipantRecord, Participant>(
         { path: `/tables/participants`, mpOptions }
@@ -325,6 +343,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/form_response_answers`, mpOptions, params }
       );
     },
+    async createContactEmailAddress(params, mpOptions) {
+      return createMany<CreateContactEmailAddressParams, ContactEmailAddress>(
+        { path: `/tables/contact_email_addresses`, mpOptions, params }
+      );
+    },
     async updateContacts(params, mpOptions) {
       return update<Partial<Contact>, Contact>(
         { path: `/tables/contacts`, mpOptions, params }
@@ -350,7 +373,9 @@ export {
   Address,
   FormResponse,
   FormResponseAnswer,
+  ContactEmailAddress,
   ErrorDetails,
+  DateTimeIsoString,
   convertToCamelCase,
   convertToSnakeCase,
   stringifyURLParams,
