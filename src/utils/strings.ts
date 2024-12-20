@@ -43,7 +43,8 @@ export function escapeSql(str: string) {
 
 export function toCamelCase(str: string, { capitalIds = false }: { capitalIds?: boolean; }= {}) {
   str = str.replace('-', '')
-  str = str.replace(/^_?[A-Z]{1,3}/, match => match.toLowerCase());                     // Don't convert if start with ID, HS, SMS, etc
+  str = str.toLowerCase();
+	// str = str.replace(/^_?[A-Z]{1,3}/, match => match.toLowerCase()); // Don't convert if start with ID, HS, SMS, etc
   str = str.replace(/(?<=^_|^__)[^\W_]/g, match => match.at(-1)?.toLowerCase() || '');  // keep underscore if first char
   str = str.replace(/(?<!^_|^)_[^\W_]/g, match => match.charAt(1).toUpperCase());       // remove underscore if not first char
   return capitalIds ? str.replace(/id$/i, 'ID') : str;
