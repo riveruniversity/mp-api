@@ -38,9 +38,9 @@ export interface Household {
     homePhoneUnlisted: boolean;
     homeAddressUnlisted: boolean;
     bulkMailOptOut: boolean;
-    firstDonation: null | string;
-    lastDonation: null | string;
-    lastActivity: string;
+    readonly _firstDonation: null | string;
+    readonly _lastDonation: null | string;
+    readonly _lastActivity: string;
     seasonalAlternateAddressSettings: null | string;
     alternateMailingAddress: null | string;
     seasonStart: null | string;

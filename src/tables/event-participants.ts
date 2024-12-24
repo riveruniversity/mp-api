@@ -32,7 +32,7 @@ export interface EventParticipant {
     notes: string;
     groupParticipantID: null | number;
     checkInStation: null | string;
-    setupDate: string;
+    readonly _setupDate: string;
     groupID: number;
     roomID: null | number;
     callParents: null | string;

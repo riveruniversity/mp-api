@@ -91,7 +91,7 @@ export interface Contact {
     userAccount: number | null;
     idCard: string | null;
     contactGUID: string;
-    _contactSetupDate: string;
+    readonly _contactSetupDate: string;
     occupationName: string | null;
     emailVerified: boolean;
     mobilePhoneVerified: boolean;

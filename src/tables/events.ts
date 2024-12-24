@@ -72,7 +72,7 @@ export type Event = {
     eventEndDate: string;
     minutesForCleanup: number;
     cancelled: boolean;
-    approved: boolean;
+    readonly _approved: boolean;
     publicWebsiteSettings: null | string;
     visibilityLevelID: number;
     featuredOnCalendar: boolean;
@@ -83,7 +83,7 @@ export type Event = {
     registrationActive: boolean;
     registerIntoSeries: boolean;
     externalRegistrationURL: null | string;
-    webApproved: boolean;
+    readonly _webApproved: boolean;
     forceLogin: boolean;
     checkInInformation: null | string;
     allowCheckin: boolean;

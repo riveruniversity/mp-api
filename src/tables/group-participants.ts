@@ -42,18 +42,18 @@ export interface GroupParticipant {
   emailOptOut: boolean;
   shareWithGroup: boolean;
   autoPromote: boolean;
-  firstAttendance: null | string;
-  secondAttendance: null | string;
-  thirdAttendance: null | string;
-  lastAttendance: null | string;
+  readonly _firstAttendance: null | string;
+  readonly _secondAttendance: null | string;
+  readonly _thirdAttendance: null | string;
+  readonly _lastAttendance: null | string;
   showEmail: boolean;
   showPhone: boolean;
   showLastName: boolean;
   showPhoto: boolean;
-  _showBirthday: boolean;
-  _showEmail: boolean;
-  _showHomePhone: boolean;
-  _showMobilePhone: boolean;
-  _showAddress: boolean;
-  _showPhoto: boolean;
+  readonly _showBirthday: boolean;
+  readonly _showEmail: boolean;
+  readonly _showHomePhone: boolean;
+  readonly _showMobilePhone: boolean;
+  readonly _showAddress: boolean;
+  readonly _showPhoto: boolean;
 }

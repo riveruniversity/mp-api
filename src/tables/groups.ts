@@ -76,8 +76,8 @@ export interface Group {
     requiredBook: null | string;
     descendedFrom: null | number;
     reasonEnded: null | string;
-    lastAttendancePosted: null | string;
-    lastGroupMemberChanged: string;
+    readonly _lastAttendancePosted: null | string;
+    readonly _lastGroupMemberChanged: string;
     checkInInformation: null | string;
     secureCheckIn: boolean;
     suppressNametag: boolean;
