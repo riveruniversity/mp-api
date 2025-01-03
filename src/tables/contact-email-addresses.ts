@@ -22,3 +22,7 @@ export interface ContactEmailAddress {
 export interface ContactWithEmailAddress extends Contact, Omit<ContactEmailAddress, "emailAddress"> {
   alternateEmail: string;
 }
+
+export interface ContactWithEmailAddresses extends Contact, Omit<ContactWithEmailAddress, "alternateEmail"> {
+  emailAddresses: string[];
+}

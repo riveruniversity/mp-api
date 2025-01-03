@@ -12,7 +12,7 @@ import { GroupParticipant, GroupParticipantRecord } from './tables/group-partici
 import { ContactAttribute, ContactAttributeRecord, ContactWithAttribute } from './tables/contact-attributes';
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
 import { FormResponseAnswer } from './tables/from-response-answers';
-import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress } from './tables/contact-email-addresses';
+import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress, ContactWithEmailAddresses } from './tables/contact-email-addresses';
 
 
 export type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -128,7 +128,7 @@ export type MPInstance = {
   getContactEmailAddresses(
     options: AtLeastOne<MPGetOptions>
   ): Promise<ContactEmailAddress[] | { error: ErrorDetails; }>;
-  getContactsWithEmailAddresses(
+  getContactsWithEmailAddress(
     options: AtLeastOne<Omit<MPGetOptions, "select">>
   ): Promise<ContactWithEmailAddress[] | { error: ErrorDetails; }>;
   getHouseholds(
@@ -285,8 +285,8 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     },
     async getContactsWithAttributes(mpOptions) {
       return getMany<ContactAttributeRecord, ContactWithAttribute>(
-        { path: `/tables/contact_email_addresses`, 
-          mpOptions: { ...mpOptions, select: 'Contact_ID_Table.*, Contact_Email_Addresses.Email_Address As Second_Email' } 
+        { path: `/tables/contact_attributes`, 
+          mpOptions: { ...mpOptions, select: 'Contact_ID_Table.*, Contact_Attributes.*' } 
         }
       );
     },
@@ -295,10 +295,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/contact_email_addresses`, mpOptions }
       );
     },
-    async getContactsWithEmailAddresses(mpOptions) {
+    async getContactsWithEmailAddress(mpOptions) {
       return getMany<ContactEmailAddressRecord, ContactWithEmailAddress>(
         { path: `/tables/contact_email_addresses`, 
-          mpOptions: { ...mpOptions, select: 'Contact_ID_Table.*, Contact_Email_Addresses.Email_Address As Second_Email' } 
+          mpOptions: { ...mpOptions, 
+            select: 'Contact_ID_Table.*, Contact_Email_Addresses.Email_Address As Alternate_Email, Contact_Email_Addresses.*' } 
         }
       );
     },
@@ -408,14 +409,15 @@ export {
   Group,
   EventParticipant,
   GroupParticipant,
-  ContactAttribute,
   Household,
   Address,
   FormResponse,
   FormResponseAnswer,
+  ContactAttribute,
+  ContactWithAttribute,
   ContactEmailAddress,
   ContactWithEmailAddress,
-  ContactWithAttribute,
+  ContactWithEmailAddresses,
   ErrorDetails,
   DateTimeIsoString,
   convertToCamelCase,
