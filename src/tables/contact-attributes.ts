@@ -1,3 +1,5 @@
+import { Contact } from "./contacts";
+
 export interface ContactAttributeRecord {
   Contact_Attribute_ID: number;
   Contact_ID: number;
@@ -14,4 +16,8 @@ export interface ContactAttribute {
   startDate: string;
   endDate?: string | null;
   notes?: string | null;
+}
+
+
+export interface ContactWithAttribute extends Contact, ContactAttribute {
 }

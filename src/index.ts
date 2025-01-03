@@ -1,3 +1,4 @@
+import { AxiosInstance } from 'axios';
 import { createApiBase, MPApiBase, ErrorDetails, MPGetOptions, MPCreateOptions, MPUpdateOptions, DateTimeIsoString } from './api';
 import { convertToCamelCase, convertToSnakeCase, escapeSql, stringifyURLParams } from './utils/converters';
 import { Contact, ContactRecord } from './tables/contacts';
@@ -8,11 +9,10 @@ import { Household, HouseholdRecord } from './tables/households';
 import { Participant, ParticipantRecord } from './tables/participants';
 import { EventParticipant, EventParticipantRecord } from './tables/event-participants';
 import { GroupParticipant, GroupParticipantRecord } from './tables/group-participants';
-import { ContactAttribute, ContactAttributeRecord } from './tables/contact-attributes';
+import { ContactAttribute, ContactAttributeRecord, ContactWithAttribute } from './tables/contact-attributes';
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
 import { FormResponseAnswer } from './tables/from-response-answers';
-import { AxiosInstance } from 'axios';
-import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress, ContactWithEmailAddresses } from './tables/contact-email-addresses';
+import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress } from './tables/contact-email-addresses';
 
 
 export type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -122,12 +122,15 @@ export type MPInstance = {
   getContactAttributes(
     options: AtLeastOne<MPGetOptions>
   ): Promise<ContactAttribute[] | { error: ErrorDetails; }>;
+  getContactsWithAttributes(
+    options: AtLeastOne<Omit<MPGetOptions, "select">>
+  ): Promise<ContactWithAttribute[] | { error: ErrorDetails; }>;
   getContactEmailAddresses(
     options: AtLeastOne<MPGetOptions>
   ): Promise<ContactEmailAddress[] | { error: ErrorDetails; }>;
   getContactsWithEmailAddresses(
     options: AtLeastOne<Omit<MPGetOptions, "select">>
-  ): Promise<ContactWithEmailAddresses[] | { error: ErrorDetails; }>;
+  ): Promise<ContactWithEmailAddress[] | { error: ErrorDetails; }>;
   getHouseholds(
     options: AtLeastOne<MPGetOptions>
   ): Promise<Household[] | { error: ErrorDetails; }>;
@@ -280,19 +283,24 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/contact_attributes`, mpOptions }
       );
     },
+    async getContactsWithAttributes(mpOptions) {
+      return getMany<ContactAttributeRecord, ContactWithAttribute>(
+        { path: `/tables/contact_email_addresses`, 
+          mpOptions: { ...mpOptions, select: 'Contact_ID_Table.*, Contact_Email_Addresses.Email_Address As Second_Email' } 
+        }
+      );
+    },
     async getContactEmailAddresses(mpOptions) {
       return getMany<ContactEmailAddressRecord, ContactEmailAddress>(
         { path: `/tables/contact_email_addresses`, mpOptions }
       );
     },
     async getContactsWithEmailAddresses(mpOptions) {
-      let res = await getMany<ContactEmailAddressRecord, ContactWithEmailAddress>(
+      return getMany<ContactEmailAddressRecord, ContactWithEmailAddress>(
         { path: `/tables/contact_email_addresses`, 
           mpOptions: { ...mpOptions, select: 'Contact_ID_Table.*, Contact_Email_Addresses.Email_Address As Second_Email' } 
         }
       );
-      
-      return res
     },
     async getHouseholds(mpOptions) {
       return getMany<HouseholdRecord, Household>(
@@ -406,6 +414,8 @@ export {
   FormResponse,
   FormResponseAnswer,
   ContactEmailAddress,
+  ContactWithEmailAddress,
+  ContactWithAttribute,
   ErrorDetails,
   DateTimeIsoString,
   convertToCamelCase,
