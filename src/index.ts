@@ -1,5 +1,5 @@
 import { createApiBase, MPApiBase, ErrorDetails, MPGetOptions, MPCreateOptions, MPUpdateOptions, DateTimeIsoString } from './api';
-import { convertToCamelCase, convertToSnakeCase, escapeSql, stringifyURLParams } from './utils/strings';
+import { convertToCamelCase, convertToSnakeCase, escapeSql, stringifyURLParams } from './utils/converters';
 import { Contact, ContactRecord } from './tables/contacts';
 import { Event, EventRecord } from './tables/events';
 import { Group, GroupRecord } from './tables/groups';
@@ -12,7 +12,7 @@ import { ContactAttribute, ContactAttributeRecord } from './tables/contact-attri
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
 import { FormResponseAnswer } from './tables/from-response-answers';
 import { AxiosInstance } from 'axios';
-import { ContactEmailAddress, ContactEmailAddressRecord } from './tables/contact-email-addresses';
+import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress, ContactWithEmailAddresses } from './tables/contact-email-addresses';
 
 
 export type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -125,6 +125,9 @@ export type MPInstance = {
   getContactEmailAddresses(
     options: AtLeastOne<MPGetOptions>
   ): Promise<ContactEmailAddress[] | { error: ErrorDetails; }>;
+  getContactsWithEmailAddresses(
+    options: AtLeastOne<Omit<MPGetOptions, "select">>
+  ): Promise<ContactWithEmailAddresses[] | { error: ErrorDetails; }>;
   getHouseholds(
     options: AtLeastOne<MPGetOptions>
   ): Promise<Household[] | { error: ErrorDetails; }>;
@@ -281,6 +284,15 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
       return getMany<ContactEmailAddressRecord, ContactEmailAddress>(
         { path: `/tables/contact_email_addresses`, mpOptions }
       );
+    },
+    async getContactsWithEmailAddresses(mpOptions) {
+      let res = await getMany<ContactEmailAddressRecord, ContactWithEmailAddress>(
+        { path: `/tables/contact_email_addresses`, 
+          mpOptions: { ...mpOptions, select: 'Contact_ID_Table.*, Contact_Email_Addresses.Email_Address As Second_Email' } 
+        }
+      );
+      
+      return res
     },
     async getHouseholds(mpOptions) {
       return getMany<HouseholdRecord, Household>(

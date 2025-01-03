@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URLSearchParams } from 'url';
-import { convertToCamelCase, convertToSnakeCase, stringifyURLParams } from './utils/strings';
+import { convertToCamelCase, convertToSnakeCase, stringifyURLParams, toCapitalSnakeCase } from './utils/converters';
 
 
 export type APIGetOneInstance = <T, R>({ id, path, mpOptions, config }: APIGetParameter & { id: number; }) => Promise<R | undefined | { error: ErrorDetails; }>;
@@ -30,6 +30,7 @@ export interface ErrorDetails {
   method?: string;
   url?: string;
   data?: string;
+  reason?: string;
 }
 
 
@@ -93,15 +94,18 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     }
   };
 
-  const getMany: APIGetMultipleInstance = async <T, R>({ path, mpOptions, config }: APIGetParameter) => {
+  const getMany: APIGetMultipleInstance = async <T, R>({ path, mpOptions, config }: APIGetParameter): Promise<R[] | { error: ErrorDetails; }> => {
     try {
-      const url = path + stringifyURLParams(mpOptions);
-      const res = await api.get<T[]>(url, {
+      const url = path + '/get'; //+ stringifyURLParams(mpOptions);
+      const data = mpOptions && convertToSnakeCase<MPGetOptions>(mpOptions);
+      const res = await api.post<T[]>(url, data, {
         ...config,
-        headers: {
-          ...config?.headers,
-          Authorization: `Bearer ${await getToken()}`,
-        },
+        ...{
+          headers: {
+            ...config?.headers,
+            Authorization: `Bearer ${await getToken()}`,
+          }
+        }
       });
       return res.data.map(record => convertToCamelCase<T, R>(record));
     }
@@ -217,7 +221,8 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
       status: error.status,
       method: error.config?.method,
       url: error.config?.url,
-      data: error.config?.data
+      data: error.config?.data,
+      reason: (error.response?.data as any)?.Message,
     };
   };
 

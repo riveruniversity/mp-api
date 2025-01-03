@@ -1,3 +1,5 @@
+import { DateTimeIsoString } from "../api";
+
 export interface ContactRecord {
     Contact_ID: number;
     Company: boolean;
@@ -9,7 +11,7 @@ export interface ContactRecord {
     Last_Name: string | null;
     Suffix_ID: number | null;
     Nickname: string | null;
-    Date_of_Birth: string | null;
+    Date_of_Birth: DateTimeIsoString | null;
     Gender_ID: number | null;
     Marital_Status_ID: number | null;
     Contact_Status_ID: number;
@@ -62,7 +64,7 @@ export interface Contact {
     lastName: string | null;
     suffixID: number | null;
     nickname: string | null;
-    dateOfBirth: string | null;
+    dateOfBirth: DateTimeIsoString | string | null;
     genderID: number | null;
     maritalStatusID: number | null;
     contactStatusID: number;
