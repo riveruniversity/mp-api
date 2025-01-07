@@ -28,7 +28,7 @@ export interface GroupRecord {
     _Last_Attendance_Posted: null | string;
     _Last_Group_Member_Changed: string;
     Check_in_Information: null | string;
-    Secure_Check_in: boolean;
+    'Secure_Check-in': boolean;
     Suppress_Nametag: boolean;
     Suppress_Care_Note: boolean;
     On_Classroom_Manager: boolean;

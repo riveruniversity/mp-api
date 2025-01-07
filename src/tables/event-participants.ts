@@ -8,7 +8,7 @@ export interface EventParticipantRecord {
     Time_Out: string | null;
     Notes: string;
     Group_Participant_ID: null | number;
-    Check_in_Station: null | string;
+    'Check-in_Station': null | string;
     _Setup_Date: string;
     Group_ID: number;
     Room_ID: null | number;
@@ -31,7 +31,7 @@ export interface EventParticipant {
     timeOut: string | null;
     notes: string;
     groupParticipantID: null | number;
-    checkInStation: null | string;
+    'check-InStation': null | string;
     readonly _setupDate: string;
     groupID: number;
     roomID: null | number;

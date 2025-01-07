@@ -27,13 +27,13 @@ export type EventRecord = {
     External_Registration_URL: null | string;
     _Web_Approved: boolean;
     Force_Login: boolean;
-    Check_in_Information: null | string;
-    Allow_Check_in: boolean;
+    'Check-in_Information': null | string;
+    'Allow_Check-in': boolean;
     Ignore_Program_Groups: boolean;
     Prohibit_Guests: boolean;
     Search_Results: number;
-    Early_Check_in_Period: null | string;
-    Late_Check_in_Period: null | string;
+    'Early_Check-in_Period': null | string;
+    'Late_Check-in_Period': null | string;
     Notification_Settings: null | string;
     Registrant_Message: null | string;
     Days_Out_to_Remind: null | number;
