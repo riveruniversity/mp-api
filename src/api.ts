@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URLSearchParams } from 'url';
-import { convertToCamelCase, convertToSnakeCase, stringifyURLParams, toCapitalSnakeCase } from './utils/converters';
+import { convertToCamelCase, convertToSnakeCase, escapeApostrophes, stringifyURLParams, toCapitalSnakeCase } from './utils/converters';
 
 
 export type APIGetOneInstance = <T, R>({ id, path, mpOptions, config }: APIGetParameter & { id: number; }) => Promise<R | undefined | { error: ErrorDetails; }>;
@@ -98,7 +98,7 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     try {
       const url = path + '/get'; //+ stringifyURLParams(mpOptions);
       const data = mpOptions && convertToSnakeCase<MPGetOptions>(mpOptions);
-      const res = await api.post<T[]>(url, data, {
+      const res = await api.post<T[]>(url, escapeApostrophes(data), {
         ...config,
         ...{
           headers: {
@@ -151,7 +151,6 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     catch (err) {
       return { error: getError(err) };
     }
-
   };
 
 

@@ -40,6 +40,7 @@ export function escapeSql(str: string) {
 }
 
 export function escapeApostrophe<T = string>(str: string): T {
+  if(typeof str !== 'string') return str;
   return str.replace(/%|(?<=\w)'(?=\w)/g, function (char) {
     switch (char) {
       case "'":
@@ -62,7 +63,7 @@ export function escapeApostrophes<T>(obj: T) {
     return obj;
   }
 
-  return obj; // Return value if it's neither an array nor an object
+  return obj; // Return value if it's not an object
 }
 
 
@@ -78,10 +79,10 @@ export function toCamelCase(str: string, { capitalIds = false }: { capitalIds?: 
   return capitalIds ? str.replace(/id$/i, 'ID') : str;
 }
 
-export function toCapitalSnakeCase(str: string, { capitalIds = false, capitalSnake = true }: { capitalIds?: boolean, capitalSnake?: boolean; } = {}) {
+export function toCapitalSnakeCase(str: string, { capitalIds = false }: { capitalIds?: boolean, capitalSnake?: boolean; } = {}) {
   str = str.replace(/(?<=^_|^__)[^\W_]/, match => match.at(0)?.toUpperCase() || '');
   str = str.replace(/(?<!_|\/)(ID|[A-Z]|\d)/g, match => `_${match}`);
-  str = capitalSnake ? str.charAt(0).toUpperCase() + str.slice(1) : str;
+  str = str.charAt(0).toUpperCase() + str.slice(1);
   return capitalIds ? str.replace(/_id$/i, '_ID') : str;
 }
 
