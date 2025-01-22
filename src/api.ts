@@ -151,7 +151,6 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
     catch (err) {
       return { error: getError(err) };
     }
-
   };
 
 
