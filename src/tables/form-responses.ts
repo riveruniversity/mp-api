@@ -14,7 +14,7 @@ export interface FormResponseRecord {
   Address_City: string | null;
   Address_State: string | null;
   Address_Zip: number | null;
-  Event_ID: number;
+  Event_ID: number| null;
   Pledge_Campaign_ID: null;
   Opportunity_ID: null;
   Opportunity_Response: null;
@@ -40,7 +40,7 @@ export interface FormResponse {
   addressCity: string | null;
   addressState: string | null;
   addressZip: string | null;
-  eventID: number;
+  eventID: number| null;
   pledgeCampaignID: null;
   opportunityID: null;
   opportunityResponse: null;

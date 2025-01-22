@@ -40,18 +40,48 @@ export function escapeSql(str: string) {
 }
 
 
+export function escapeApostrophes(obj) {
 
-export function toCamelCase(str: string, { capitalIds = false }: { capitalIds?: boolean; }= {}) {
-  str = str.replace('-', '')
+  if (obj !== null && typeof obj === 'object') {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = obj[key];
+        if (typeof value === 'string')
+          obj[key] = escapeApostrophe(value);
+        else
+          obj[key] = value;
+      }
+    }
+    return obj;
+  }
+
+  return obj; // Return value if it's not an object
+}
+
+
+export function escapeApostrophe(str: string) {
+  return str.replace(/(?<=\w)'(?=\w)/g, function (char: string) {
+    switch (char) {
+      case "'":
+        return "''";
+      default:
+        return char;
+    }
+  });
+}
+
+
+export function toCamelCase(str: string, { capitalIds = false }: { capitalIds?: boolean; } = {}) {
+  str = str.replace('-', '');
   str = str.toLowerCase();
-	// str = str.replace(/^_?[A-Z]{1,3}/, match => match.toLowerCase()); // Don't convert if start with ID, HS, SMS, etc
-	str = str.replace(/(?<!^_|^)[^a-zA-Z0-9_][^\W_]/g, match => match?.toUpperCase()); // capitalize after non word char
+  // str = str.replace(/^_?[A-Z]{1,3}/, match => match.toLowerCase()); // Don't convert if start with ID, HS, SMS, etc
+  str = str.replace(/(?<!^_|^)[^a-zA-Z0-9_][^\W_]/g, match => match?.toUpperCase()); // capitalize after non word char
   str = str.replace(/(?<=^_|^__)[^\W_]/g, match => match.at(-1)?.toLowerCase() || '');  // keep underscore if first char
   str = str.replace(/(?<!^_|^)_[^\W_]/g, match => match.charAt(1).toUpperCase()); // remove non-word char if not first char
   return capitalIds ? str.replace(/id$/i, 'ID') : str;
 }
 
-export function toCapitalSnakeCase(str: string, { capitalIds = false, capitalSnake = true }: { capitalIds?: boolean, capitalSnake?: boolean; }= {}) {
+export function toCapitalSnakeCase(str: string, { capitalIds = false, capitalSnake = true }: { capitalIds?: boolean, capitalSnake?: boolean; } = {}) {
   str = str.replace(/(?<=^_|^__)[^\W_]/, match => match.at(0)?.toUpperCase() || '');
   str = str.replace(/(?<!_|\/)(ID|[A-Z]|\d)/g, match => `_${match}`);
   str = capitalSnake ? str.charAt(0).toUpperCase() + str.slice(1) : str;

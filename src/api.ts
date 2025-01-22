@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { URLSearchParams } from 'url';
-import { convertToCamelCase, convertToSnakeCase, stringifyURLParams, toCapitalSnakeCase } from './utils/converters';
+import { convertToCamelCase, convertToSnakeCase, escapeApostrophes, stringifyURLParams, toCapitalSnakeCase } from './utils/converters';
 
 
 export type APIGetOneInstance = <T, R>({ id, path, mpOptions, config }: APIGetParameter & { id: number; }) => Promise<R | undefined | { error: ErrorDetails; }>;
@@ -97,7 +97,7 @@ export const createApiBase = ({ auth }: { auth: { username: string; password: st
   const getMany: APIGetMultipleInstance = async <T, R>({ path, mpOptions, config }: APIGetParameter): Promise<R[] | { error: ErrorDetails; }> => {
     try {
       const url = path + '/get'; //+ stringifyURLParams(mpOptions);
-      const data = mpOptions && convertToSnakeCase<MPGetOptions>(mpOptions);
+      const data = mpOptions && escapeApostrophes(convertToSnakeCase<MPGetOptions>(mpOptions));
       const res = await api.post<T[]>(url, data, {
         ...config,
         ...{

@@ -60,6 +60,16 @@ export type CreateContactEmailAddressParams = WithRequired<
 >;
 
 
+
+export interface ContactDetails extends Contact, Participant, Household {
+  householdID: number;
+  gender: 'Male' | 'Female' | null;
+  memberStatus: string;
+  maritalStatus: string;
+  imageID: string | null;
+}
+
+
 export type MPInstance = {
 
   get: AxiosInstance['get'];
@@ -75,6 +85,10 @@ export type MPInstance = {
     id: number,
     options?: MPGetOptions
   ): Promise<Contact | undefined | { error: ErrorDetails; }>;
+  getContactDetails(
+    id: number,
+    options?: MPGetOptions
+  ): Promise<ContactDetails | undefined | { error: ErrorDetails; }>;
   getContactAttribute(
     id: number,
     options?: MPGetOptions
@@ -221,6 +235,14 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     async getContact(id, mpOptions = {}) {
       return getOne<ContactRecord, Contact>(
         { path: `/tables/contacts`, id, mpOptions }
+      );
+    },
+    async getContactDetails(id, mpOptions) {
+      return getOne<ContactRecord, ContactDetails>(
+        { path: `/tables/contacts`, id, 
+          mpOptions: { ...mpOptions, 
+            select: 'Contacts.*, Participant_Record_Table.*, Household_ID_Table.*, Gender_ID_Table.Gender, Participant_Record_Table_Member_Status_ID_Table.Member_Status, Marital_Status_ID_Table.Marital_Status, dp_fileUniqueId as Image_ID' } 
+        }
       );
     },
     async getContactAttribute(id, mpOptions = {}) {
