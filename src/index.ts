@@ -212,6 +212,10 @@ export type MPInstance = {
     contacts: WithRequired<Partial<Contact>, 'contactID'>[],
     options?: MPUpdateOptions
   ): Promise<Contact[] | { error: ErrorDetails; }>;
+  updateHouseholds(
+    households: WithRequired<Partial<Household>, 'householdID'>[],
+    options?: MPUpdateOptions
+  ): Promise<Household[] | { error: ErrorDetails; }>;
   updateEventParticipants(
     participants: WithRequired<Partial<EventParticipant>, 'eventParticipantID'>[],
     options?: MPUpdateOptions
@@ -414,6 +418,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     async updateContacts(params, mpOptions) {
       return update<Partial<Contact>, Contact>(
         { path: `/tables/contacts`, mpOptions, params }
+      );
+    },
+    async updateHouseholds(params, mpOptions) {
+      return update<Partial<Household>, Household>(
+        { path: `/tables/households`, mpOptions, params }
       );
     },
     async updateEventParticipants(params, mpOptions) {
