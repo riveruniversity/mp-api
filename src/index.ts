@@ -221,7 +221,7 @@ export type MPInstance = {
     options?: MPUpdateOptions
   ): Promise<EventParticipant[] | { error: ErrorDetails; }>;
   updateGroupParticipants(
-    participants: WithRequired<Partial<GroupParticipant>, 'groupID'>[],
+    participants: WithRequired<Partial<GroupParticipant>, 'groupParticipantID'>[],
     options?: MPUpdateOptions
   ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
 };
