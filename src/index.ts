@@ -11,7 +11,7 @@ import { EventParticipant, EventParticipantRecord } from './tables/event-partici
 import { GroupParticipant, GroupParticipantRecord } from './tables/group-participants';
 import { ContactAttribute, ContactAttributeRecord, ContactWithAttribute } from './tables/contact-attributes';
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
-import { FormResponseAnswer } from './tables/from-response-answers';
+import { FormResponseAnswer, FormResponseAnswerRecord } from './tables/from-response-answers';
 import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress, ContactWithEmailAddresses } from './tables/contact-email-addresses';
 
 
@@ -166,6 +166,9 @@ export type MPInstance = {
   getGroupParticipants(
     options: AtLeastOne<MPGetOptions>
   ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
+  getFormResponseAnswers(
+    options: AtLeastOne<MPGetOptions>
+  ): Promise<FormResponseAnswer[] | { error: ErrorDetails; }>;
 
   createContact(
     params: CreateContactParams,
@@ -366,6 +369,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     async getGroupParticipants(mpOptions) {
       return getMany<GroupParticipantRecord, GroupParticipant>(
         { path: `/tables/group_participants`, mpOptions }
+      );
+    },
+    async getFormResponseAnswers(mpOptions) {
+      return getMany<FormResponseAnswerRecord, FormResponseAnswer>(
+        { path: `/tables/form_response_answers`, mpOptions }
       );
     },
 
