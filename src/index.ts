@@ -227,6 +227,10 @@ export type MPInstance = {
     participants: WithRequired<Partial<GroupParticipant>, 'groupParticipantID'>[],
     options?: MPUpdateOptions
   ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
+  updateFormResponseAnswers(
+    participants: WithRequired<Partial<FormResponseAnswer>, 'formResponseAnswerID'>[],
+    options?: MPUpdateOptions
+  ): Promise<FormResponseAnswer[] | { error: ErrorDetails; }>;
 };
 
 
@@ -445,6 +449,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     async updateGroupParticipants(params, mpOptions) {
       return update<Partial<GroupParticipant>, GroupParticipant>(
         { path: `/tables/group_participants`, mpOptions, params }
+      );
+    },
+    async updateFormResponseAnswers(params, mpOptions) {
+      return update<Partial<FormResponseAnswer>, FormResponseAnswer>(
+        { path: `/tables/form_response_answers`, mpOptions, params }
       );
     },
   };
