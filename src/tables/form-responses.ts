@@ -29,7 +29,7 @@ export interface FormResponse {
   formResponseID: number;
   formID: number;
   responseDate: string;
-  iPAddress: string | null;
+  ipAddress: string | null;
   contactID: number;
   firstName: string;
   lastName: string;
