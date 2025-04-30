@@ -11,7 +11,7 @@ import { EventParticipant, EventParticipantRecord } from './tables/event-partici
 import { GroupParticipant, GroupParticipantRecord } from './tables/group-participants';
 import { ContactAttribute, ContactAttributeRecord, ContactWithAttribute } from './tables/contact-attributes';
 import { FormResponse, FormResponseRecord } from './tables/form-responses';
-import { FormResponseAnswer } from './tables/from-response-answers';
+import { FormResponseAnswer, FormResponseAnswerRecord } from './tables/from-response-answers';
 import { ContactEmailAddress, ContactEmailAddressRecord, ContactWithEmailAddress, ContactWithEmailAddresses } from './tables/contact-email-addresses';
 
 
@@ -166,6 +166,9 @@ export type MPInstance = {
   getGroupParticipants(
     options: AtLeastOne<MPGetOptions>
   ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
+  getFormResponseAnswers(
+    options: AtLeastOne<MPGetOptions>
+  ): Promise<FormResponseAnswer[] | { error: ErrorDetails; }>;
 
   createContact(
     params: CreateContactParams,
@@ -224,6 +227,10 @@ export type MPInstance = {
     participants: WithRequired<Partial<GroupParticipant>, 'groupParticipantID'>[],
     options?: MPUpdateOptions
   ): Promise<GroupParticipant[] | { error: ErrorDetails; }>;
+  updateFormResponseAnswers(
+    participants: WithRequired<Partial<FormResponseAnswer>, 'formResponseAnswerID'>[],
+    options?: MPUpdateOptions
+  ): Promise<FormResponseAnswer[] | { error: ErrorDetails; }>;
 };
 
 
@@ -368,6 +375,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
         { path: `/tables/group_participants`, mpOptions }
       );
     },
+    async getFormResponseAnswers(mpOptions) {
+      return getMany<FormResponseAnswerRecord, FormResponseAnswer>(
+        { path: `/tables/form_response_answers`, mpOptions }
+      );
+    },
 
     async createContact(params, mpOptions = {}) {
       return createOne<CreateContactParams, Contact>(
@@ -437,6 +449,11 @@ export const createMPInstance = ({ auth }: { auth: { username: string; password:
     async updateGroupParticipants(params, mpOptions) {
       return update<Partial<GroupParticipant>, GroupParticipant>(
         { path: `/tables/group_participants`, mpOptions, params }
+      );
+    },
+    async updateFormResponseAnswers(params, mpOptions) {
+      return update<Partial<FormResponseAnswer>, FormResponseAnswer>(
+        { path: `/tables/form_response_answers`, mpOptions, params }
       );
     },
   };
